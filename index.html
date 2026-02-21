@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Stock Manager</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+body { font-family: sans-serif; max-width: 600px; margin: 20px auto; }
+.product { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+button { margin: 5px; }
+.zero { color: red; }
+</style>
+</head>
+<body>
+
+<h2>在庫管理</h2>
+
+<div id="products"></div>
+
+<script>
+const supabaseUrl = "https://wonwgpsupqutrujcphwr.supabase.co";
+const supabaseKey = "sb_publishable_6k-VYBGmKA9Jt1uZVlrPiA_QewueM51";
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+async function loadProducts() {
+  const { data } = await supabase.from("products").select("*").order("name");
+  const container = document.getElementById("products");
+  container.innerHTML = "";
+
+  data.forEach(product => {
+    const div = document.createElement("div");
+    div.className = "product";
+
+    div.innerHTML = `
+      <strong onclick="copyJan('${product.jan}')">
+        ${product.name}
+      </strong><br>
+      在庫: <span class="${product.stock === 0 ? 'zero' : ''}">
+        ${product.stock}
+      </span><br>
+      更新: ${new Date(product.updated_at).toLocaleString()}<br>
+      <button onclick="changeStock('${product.id}', ${product.stock + 1})">＋</button>
+      <button onclick="changeStock('${product.id}', ${product.stock - 1})">−</button>
+    `;
+
+    container.appendChild(div);
+  });
+}
+
+async function changeStock(id, newStock) {
+  if (newStock < 0) newStock = 0;
+
+  await supabase
+    .from("products")
+    .update({ stock: newStock, updated_at: new Date() })
+    .eq("id", id);
+
+  loadProducts();
+}
+
+function copyJan(jan) {
+  navigator.clipboard.writeText(jan);
+  alert("JANコードをコピーしました");
+}
+
+loadProducts();
+</script>
+
+</body>
+</html>
