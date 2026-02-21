@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Stock Manager</title>
+<title>在庫管理</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 body { font-family: sans-serif; max-width: 600px; margin: 20px auto; }
@@ -14,16 +14,19 @@ button { margin: 5px; }
 <body>
 
 <h2>在庫管理</h2>
-
 <div id="products"></div>
 
 <script>
+// --- Supabase 接続情報 ---
 const supabaseUrl = "https://wonwgpsupqutrujcphwr.supabase.co";
 const supabaseKey = "sb_publishable_6k-VYBGmKA9Jt1uZVlrPiA_QewueM51";
 const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+// --- 商品一覧読み込み ---
 async function loadProducts() {
-  const { data } = await supabaseClient.from("products").select("*").order("name");
+  const { data, error } = await supabaseClient.from("products").select("*").order("name");
+  if (error) { alert("Supabase接続エラー: " + error.message); return; }
+
   const container = document.getElementById("products");
   container.innerHTML = "";
 
@@ -42,27 +45,28 @@ async function loadProducts() {
       <button onclick="changeStock('${product.id}', ${product.stock + 1})">＋</button>
       <button onclick="changeStock('${product.id}', ${product.stock - 1})">−</button>
     `;
-
     container.appendChild(div);
   });
 }
 
+// --- 在庫変更 ---
 async function changeStock(id, newStock) {
   if (newStock < 0) newStock = 0;
-
-  await supabaseClient
+  const { error } = await supabaseClient
     .from("products")
     .update({ stock: newStock, updated_at: new Date() })
     .eq("id", id);
-
+  if (error) { alert("更新エラー: " + error.message); return; }
   loadProducts();
 }
 
+// --- JANコピー ---
 function copyJan(jan) {
   navigator.clipboard.writeText(jan);
   alert("JANコードをコピーしました");
 }
 
+// --- ページロード時に読み込み ---
 loadProducts();
 </script>
 
