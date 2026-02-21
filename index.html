@@ -17,13 +17,14 @@ button { margin: 5px; }
 <div id="products"></div>
 
 <script>
-// --- Supabase 接続情報 ---
+// --- Supabase 接続 ---
 const supabaseUrl = "https://wonwgpsupqutrujcphwr.supabase.co";
 const supabaseKey = "sb_publishable_6k-VYBGmKA9Jt1uZVlrPiA_QewueM51";
+const mySupabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 // --- 商品一覧読み込み ---
 async function loadProducts() {
-  const { data, error } = await window.supabase.from("products").select("*").order("name");
+  const { data, error } = await mySupabase.from("products").select("*").order("name");
   if (error) { alert("Supabase接続エラー: " + error.message); return; }
 
   const container = document.getElementById("products");
@@ -51,7 +52,7 @@ async function loadProducts() {
 // --- 在庫変更 ---
 async function changeStock(id, newStock) {
   if (newStock < 0) newStock = 0;
-  const { error } = await window.supabase
+  const { error } = await mySupabase
     .from("products")
     .update({ stock: newStock, updated_at: new Date() })
     .eq("id", id);
@@ -59,15 +60,10 @@ async function changeStock(id, newStock) {
   loadProducts();
 }
 
-// --- JANコピー ---
+// --- JANコードコピー ---
 function copyJan(jan) {
   navigator.clipboard.writeText(jan);
   alert("JANコードをコピーしました");
-}
-
-// --- Supabase 初期化 ---
-if (!window.supabase._client) {
-  window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
 }
 
 // --- ページロード時に読み込み ---
