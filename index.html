@@ -96,6 +96,7 @@ button:active { opacity: 0.8; }
 <div id="products"></div>
 
 <script>
+<script>
 // --- Supabase 接続 ---
 const supabaseUrl = "https://wonwgpsupqutrujcphwr.supabase.co";
 const supabaseKey = "sb_publishable_6k-VYBGmKA9Jt1uZVlrPiA_QewueM51";
@@ -120,45 +121,47 @@ async function loadProducts() {
     const div = document.createElement("div");
     div.className = "product";
 
-div.innerHTML = `
-  <div class="top-row">
-    <strong onclick="copyJan('${product.jan}')">
-      ${product.name}
-    </strong>
-<button class="edit-btn"
-  onclick="startEdit('${product.id}')">
-  ✏️
-</button>
-  </div>
+    div.innerHTML = `
+      <div class="top-row">
+        <strong onclick="copyJan('${product.jan}')">
+          ${product.name}
+        </strong>
+        <button class="edit-btn"
+          onclick="startEdit('${product.id}')">
+          ✏️
+        </button>
+      </div>
 
-  <div id="edit-${product.id}" style="display:none; margin-top:8px;">
-    <input type="text"
-      id="input-${product.id}"
-      value="${product.name}"
-      style="width:65%; padding:4px; font-size:14px;">
-    <button onclick="saveEdit('${product.id}')"
-      style="width:30%; font-size:12px;">保存</button>
-  </div>
+      <div id="edit-${product.id}" style="display:none; margin-top:8px;">
+        <input type="text"
+          id="input-${product.id}"
+          value="${product.name}"
+          style="width:65%; padding:4px; font-size:14px;">
+        <button onclick="saveEdit('${product.id}')"
+          style="width:30%; font-size:12px;">保存</button>
+      </div>
 
-  在庫:
-  <span class="stock-number ${product.stock === 0 ? 'zero' : ''}">
-    ${product.stock}
-  </span><br>
+      在庫:
+      <span class="stock-number ${product.stock === 0 ? 'zero' : ''}">
+        ${product.stock}
+      </span><br>
 
-  更新: ${new Date(product.updated_at).toLocaleString()}<br>
+      更新: ${new Date(product.updated_at).toLocaleString()}<br>
 
-  <div style="display:flex; justify-content: space-between; margin-top:6px;">
-    <button onclick="changeStock('${product.id}', ${product.stock + 1})">＋</button>
-    <button class="minus" onclick="changeStock('${product.id}', ${product.stock - 1})">−</button>
-  </div>
-`;
+      <div style="display:flex; justify-content: space-between; margin-top:6px;">
+        <button onclick="changeStock('${product.id}', ${product.stock + 1})">＋</button>
+        <button class="minus" onclick="changeStock('${product.id}', ${product.stock - 1})">−</button>
+      </div>
+    `;
 
+    container.appendChild(div);
+  });
+}
 
+// ✅ ここから外に出す
 function startEdit(id) {
   const box = document.getElementById("edit-" + id);
-  if (box) {
-    box.style.display = "block";
-  }
+  if (box) box.style.display = "block";
 }
 
 async function saveEdit(id) {
@@ -179,13 +182,6 @@ async function saveEdit(id) {
   loadProducts();
 }
 
-
-    
-
-    container.appendChild(div);
-  });
-}
-
 // --- 在庫変更 ---
 async function changeStock(id, newStock) {
   if (newStock < 0) newStock = 0;
@@ -203,28 +199,13 @@ async function changeStock(id, newStock) {
   loadProducts();
 }
 
-// --- 商品名編集 ---
-async function editName(jan, currentName) {
-  const newName = prompt("新しい商品名を入力", currentName);
-  if (!newName || newName === currentName) return;
-
-  const { error } = await mySupabase
-    .from("products")
-    .update({ name: newName, updated_at: new Date() })
-    .eq("jan", jan);
-
-  if (error) {
-    alert("更新エラー: " + error.message);
-    return;
-  }
-
-  loadProducts();
-}
-  function copyJan(jan) {
+// --- JANコピー ---
+function copyJan(jan) {
   navigator.clipboard.writeText(jan);
   showToast("JANコードをコピーしました");
 }
 
+// --- トースト表示 ---
 function showToast(message) {
   const toast = document.createElement("div");
   toast.className = "toast";
@@ -232,10 +213,8 @@ function showToast(message) {
 
   document.body.appendChild(toast);
 
-  // 表示
   setTimeout(() => toast.classList.add("show"), 10);
 
-  // 1.2秒後に消す
   setTimeout(() => {
     toast.classList.remove("show");
     setTimeout(() => toast.remove(), 200);
@@ -244,7 +223,4 @@ function showToast(message) {
 
 // --- ページロード時 ---
 loadProducts();
-
 </script>
-</body>
-</html>
