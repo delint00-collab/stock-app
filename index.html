@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>在庫管理（スマホ用）</title>
+<title>在庫管理</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
@@ -11,64 +11,57 @@ body {
   font-family: sans-serif;
   margin: 8px;
   padding: 0;
-  max-width: 100%;
   background-color: #f9f9f9;
 }
-h2 { text-align: center; font-size: 28px; margin-bottom: 15px; }
-
+h2 {
+  text-align: center;
+  font-size: 26px;
+  margin-bottom: 15px;
+}
 .product {
   border: 1px solid #ccc;
   padding: 14px;
   margin-bottom: 12px;
-  background-color: #fff;
+  background: #fff;
   border-radius: 8px;
-  box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
-  width: 100%;
-  box-sizing: border-box;
 }
-
 .top-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-
 .product strong {
-  font-size: 22px;
+  font-size: 20px;
   cursor: pointer;
 }
-
 .edit-btn {
   font-size: 14px;
   padding: 4px 8px;
-  background-color: #2196F3;
-  width: auto;
-}
-
-.stock-number {
-  font-size: 20px;
-}
-
-button {
-  font-size: 12px;
-  padding: 6px 0;
-  margin: 4px 2px;
-  width: 42%;
-  border-radius: 5px;
+  background: #2196F3;
   border: none;
-  background-color: #4CAF50;
+  border-radius: 5px;
   color: white;
 }
-
-button.minus { background-color: #f44336; }
-button:active { opacity: 0.8; }
-
-.zero { color: red; font-weight: bold; }
-
-@media (min-width: 600px) {
-  body { max-width: 600px; margin: 20px auto; }
+.stock-number {
+  font-size: 18px;
 }
-  
+button {
+  font-size: 14px;
+  padding: 6px 0;
+  margin: 4px 2px;
+  width: 45%;
+  border-radius: 5px;
+  border: none;
+  background: #4CAF50;
+  color: white;
+}
+button.minus {
+  background: #f44336;
+}
+.zero {
+  color: red;
+  font-weight: bold;
+}
 .toast {
   position: fixed;
   top: 50%;
@@ -79,14 +72,13 @@ button:active { opacity: 0.8; }
   padding: 14px 22px;
   border-radius: 12px;
   font-size: 16px;
-  z-index: 9999;
   opacity: 0;
   transition: opacity 0.2s ease;
+  z-index: 9999;
 }
 .toast.show {
   opacity: 1;
 }
-  
 </style>
 </head>
 
@@ -96,13 +88,10 @@ button:active { opacity: 0.8; }
 <div id="products"></div>
 
 <script>
-<script>
-// --- Supabase 接続 ---
 const supabaseUrl = "https://wonwgpsupqutrujcphwr.supabase.co";
 const supabaseKey = "sb_publishable_6k-VYBGmKA9Jt1uZVlrPiA_QewueM51";
 const mySupabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-// --- 商品一覧読み込み ---
 async function loadProducts() {
   const { data, error } = await mySupabase
     .from("products")
@@ -110,7 +99,7 @@ async function loadProducts() {
     .order("name");
 
   if (error) {
-    alert("Supabase接続エラー: " + error.message);
+    alert(error.message);
     return;
   }
 
@@ -118,16 +107,16 @@ async function loadProducts() {
   container.innerHTML = "";
 
   data.forEach(product => {
+
     const div = document.createElement("div");
     div.className = "product";
 
     div.innerHTML = `
       <div class="top-row">
-        <strong onclick="copyJan('${product.jan}')">
+        <strong class="copy" data-jan="${product.jan}">
           ${product.name}
         </strong>
-        <button class="edit-btn"
-          onclick="startEdit('${product.id}')">
+        <button class="edit-btn" data-id="${product.id}">
           ✏️
         </button>
       </div>
@@ -137,8 +126,10 @@ async function loadProducts() {
           id="input-${product.id}"
           value="${product.name}"
           style="width:65%; padding:4px; font-size:14px;">
-        <button onclick="saveEdit('${product.id}')"
-          style="width:30%; font-size:12px;">保存</button>
+        <button class="save-btn" data-id="${product.id}"
+          style="width:30%; font-size:12px;">
+          保存
+        </button>
       </div>
 
       在庫:
@@ -149,19 +140,50 @@ async function loadProducts() {
       更新: ${new Date(product.updated_at).toLocaleString()}<br>
 
       <div style="display:flex; justify-content: space-between; margin-top:6px;">
-        <button onclick="changeStock('${product.id}', ${product.stock + 1})">＋</button>
-        <button class="minus" onclick="changeStock('${product.id}', ${product.stock - 1})">−</button>
+        <button class="plus" data-id="${product.id}" data-stock="${product.stock}">
+          ＋
+        </button>
+        <button class="minus" data-id="${product.id}" data-stock="${product.stock}">
+          −
+        </button>
       </div>
     `;
 
     container.appendChild(div);
   });
+
+  attachEvents();
 }
 
-// ✅ ここから外に出す
-function startEdit(id) {
-  const box = document.getElementById("edit-" + id);
-  if (box) box.style.display = "block";
+function attachEvents() {
+
+  document.querySelectorAll(".copy").forEach(el => {
+    el.onclick = () => copyJan(el.dataset.jan);
+  });
+
+  document.querySelectorAll(".edit-btn").forEach(btn => {
+    btn.onclick = () => {
+      const id = btn.dataset.id;
+      document.getElementById("edit-" + id).style.display = "block";
+      document.getElementById("input-" + id).focus();
+    };
+  });
+
+  document.querySelectorAll(".save-btn").forEach(btn => {
+    btn.onclick = () => saveEdit(btn.dataset.id);
+  });
+
+  document.querySelectorAll(".plus").forEach(btn => {
+    btn.onclick = () => {
+      changeStock(btn.dataset.id, Number(btn.dataset.stock) + 1);
+    };
+  });
+
+  document.querySelectorAll(".minus").forEach(btn => {
+    btn.onclick = () => {
+      changeStock(btn.dataset.id, Number(btn.dataset.stock) - 1);
+    };
+  });
 }
 
 async function saveEdit(id) {
@@ -182,7 +204,6 @@ async function saveEdit(id) {
   loadProducts();
 }
 
-// --- 在庫変更 ---
 async function changeStock(id, newStock) {
   if (newStock < 0) newStock = 0;
 
@@ -192,35 +213,33 @@ async function changeStock(id, newStock) {
     .eq("id", id);
 
   if (error) {
-    alert("更新エラー: " + error.message);
+    alert(error.message);
     return;
   }
 
   loadProducts();
 }
 
-// --- JANコピー ---
 function copyJan(jan) {
   navigator.clipboard.writeText(jan);
   showToast("JANコードをコピーしました");
 }
 
-// --- トースト表示 ---
 function showToast(message) {
   const toast = document.createElement("div");
   toast.className = "toast";
   toast.innerText = message;
-
   document.body.appendChild(toast);
 
   setTimeout(() => toast.classList.add("show"), 10);
-
   setTimeout(() => {
     toast.classList.remove("show");
     setTimeout(() => toast.remove(), 200);
   }, 1200);
 }
 
-// --- ページロード時 ---
 loadProducts();
 </script>
+
+</body>
+</html>
