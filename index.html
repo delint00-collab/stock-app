@@ -120,29 +120,64 @@ async function loadProducts() {
     const div = document.createElement("div");
     div.className = "product";
 
-    div.innerHTML = `
-      <div class="top-row">
-        <strong onclick="copyJan('${product.jan}')">
-          ${product.name}
-        </strong>
-        <button class="edit-btn"
-          onclick="editName('${product.jan}', '${product.name}')">
-          ✏️
-        </button>
-      </div>
+div.innerHTML = `
+  <div class="top-row">
+    <strong onclick="copyJan('${product.jan}')">
+      ${product.name}
+    </strong>
+    <button class="edit-btn"
+      onclick="startEdit('${product.id}', \`${product.name}\`)">
+      ✏️
+    </button>
+  </div>
 
-      在庫:
-      <span class="stock-number ${product.stock === 0 ? 'zero' : ''}">
-        ${product.stock}
-      </span><br>
+  <div id="edit-${product.id}" style="display:none; margin-top:8px;">
+    <input type="text"
+      id="input-${product.id}"
+      value="${product.name}"
+      style="width:65%; padding:4px; font-size:14px;">
+    <button onclick="saveEdit('${product.id}')"
+      style="width:30%; font-size:12px;">保存</button>
+  </div>
 
-      更新: ${new Date(product.updated_at).toLocaleString()}<br>
+  在庫:
+  <span class="stock-number ${product.stock === 0 ? 'zero' : ''}">
+    ${product.stock}
+  </span><br>
 
-      <div style="display:flex; justify-content: space-between; margin-top:6px;">
-        <button onclick="changeStock('${product.id}', ${product.stock + 1})">＋</button>
-        <button class="minus" onclick="changeStock('${product.id}', ${product.stock - 1})">−</button>
-      </div>
-    `;
+  更新: ${new Date(product.updated_at).toLocaleString()}<br>
+
+  <div style="display:flex; justify-content: space-between; margin-top:6px;">
+    <button onclick="changeStock('${product.id}', ${product.stock + 1})">＋</button>
+    <button class="minus" onclick="changeStock('${product.id}', ${product.stock - 1})">−</button>
+  </div>
+`;
+
+
+    function startEdit(id, currentName) {
+  document.getElementById("edit-" + id).style.display = "block";
+}
+
+async function saveEdit(id) {
+  const newName = document.getElementById("input-" + id).value.trim();
+  if (!newName) return;
+
+  const { error } = await mySupabase
+    .from("products")
+    .update({ name: newName, updated_at: new Date() })
+    .eq("id", id);
+
+  if (error) {
+    showToast("更新エラー");
+    return;
+  }
+
+  showToast("商品名を更新しました");
+  loadProducts();
+}
+
+
+    
 
     container.appendChild(div);
   });
