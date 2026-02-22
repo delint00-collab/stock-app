@@ -68,6 +68,29 @@ button:active { opacity: 0.8; }
 @media (min-width: 600px) {
   body { max-width: 600px; margin: 20px auto; }
 }
+
+
+  
+.toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.85);
+  color: #fff;
+  padding: 14px 22px;
+  border-radius: 12px;
+  font-size: 16px;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.toast.show {
+  opacity: 1;
+}
+
+
+  
 </style>
 </head>
 
@@ -165,10 +188,44 @@ async function editName(jan, currentName) {
 }
 
 // --- JANコードコピー ---
-function copyJan(jan) {
+//function copyJan(jan) {
+//  navigator.clipboard.writeText(jan);
+//  alert("JANコードをコピーしました");
+
+  
+  
+  function copyJan(jan) {
   navigator.clipboard.writeText(jan);
-  alert("JANコードをコピーしました");
+  showToast("JANコードをコピーしました");
 }
+
+function showToast(message) {
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.innerText = message;
+
+  document.body.appendChild(toast);
+
+  // 表示
+  setTimeout(() => toast.classList.add("show"), 10);
+
+  // 1.2秒後に消す
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => toast.remove(), 200);
+  }, 1200);
+}
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  }
 
 // --- ページロード時 ---
 loadProducts();
