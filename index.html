@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html>
-<UTF-8>
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>在庫管理（スマホ用）</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 body {
   font-family: sans-serif;
@@ -16,6 +15,7 @@ body {
   background-color: #f9f9f9;
 }
 h2 { text-align: center; font-size: 28px; margin-bottom: 15px; }
+
 .product {
   border: 1px solid #ccc;
   padding: 14px;
@@ -26,8 +26,29 @@ h2 { text-align: center; font-size: 28px; margin-bottom: 15px; }
   width: 100%;
   box-sizing: border-box;
 }
-.product strong { font-size: 22px; cursor: pointer; }
-.product span { font-size: 20px; }
+
+.top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.product strong {
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.edit-btn {
+  font-size: 14px;
+  padding: 4px 8px;
+  background-color: #2196F3;
+  width: auto;
+}
+
+.stock-number {
+  font-size: 20px;
+}
+
 button {
   font-size: 12px;
   padding: 6px 0;
@@ -38,14 +59,18 @@ button {
   background-color: #4CAF50;
   color: white;
 }
+
 button.minus { background-color: #f44336; }
 button:active { opacity: 0.8; }
+
 .zero { color: red; font-weight: bold; }
+
 @media (min-width: 600px) {
   body { max-width: 600px; margin: 20px auto; }
 }
 </style>
 </head>
+
 <body>
 
 <h2>バック在庫</h2>
@@ -59,8 +84,15 @@ const mySupabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 // --- 商品一覧読み込み ---
 async function loadProducts() {
-  const { data, error } = await mySupabase.from("products").select("*").order("name");
-  if (error) { alert("Supabase接続エラー: " + error.message); return; }
+  const { data, error } = await mySupabase
+    .from("products")
+    .select("*")
+    .order("name");
+
+  if (error) {
+    alert("Supabase接続エラー: " + error.message);
+    return;
+  }
 
   const container = document.getElementById("products");
   container.innerHTML = "";
@@ -70,18 +102,29 @@ async function loadProducts() {
     div.className = "product";
 
     div.innerHTML = `
-      <strong onclick="copyJan('${product.jan}')">
-        ${product.name}
-      </strong><br>
-      在庫: <span class="${product.stock === 0 ? 'zero' : ''}">
+      <div class="top-row">
+        <strong onclick="copyJan('${product.jan}')">
+          ${product.name}
+        </strong>
+        <button class="edit-btn"
+          onclick="editName('${product.jan}', '${product.name}')">
+          ✏️
+        </button>
+      </div>
+
+      在庫:
+      <span class="stock-number ${product.stock === 0 ? 'zero' : ''}">
         ${product.stock}
       </span><br>
+
       更新: ${new Date(product.updated_at).toLocaleString()}<br>
-      <div style="display:flex; justify-content: space-between;">
+
+      <div style="display:flex; justify-content: space-between; margin-top:6px;">
         <button onclick="changeStock('${product.id}', ${product.stock + 1})">＋</button>
         <button class="minus" onclick="changeStock('${product.id}', ${product.stock - 1})">−</button>
       </div>
     `;
+
     container.appendChild(div);
   });
 }
@@ -89,11 +132,35 @@ async function loadProducts() {
 // --- 在庫変更 ---
 async function changeStock(id, newStock) {
   if (newStock < 0) newStock = 0;
+
   const { error } = await mySupabase
     .from("products")
     .update({ stock: newStock, updated_at: new Date() })
     .eq("id", id);
-  if (error) { alert("更新エラー: " + error.message); return; }
+
+  if (error) {
+    alert("更新エラー: " + error.message);
+    return;
+  }
+
+  loadProducts();
+}
+
+// --- 商品名編集 ---
+async function editName(jan, currentName) {
+  const newName = prompt("新しい商品名を入力", currentName);
+  if (!newName || newName === currentName) return;
+
+  const { error } = await mySupabase
+    .from("products")
+    .update({ name: newName, updated_at: new Date() })
+    .eq("jan", jan);
+
+  if (error) {
+    alert("更新エラー: " + error.message);
+    return;
+  }
+
   loadProducts();
 }
 
@@ -103,9 +170,9 @@ function copyJan(jan) {
   alert("JANコードをコピーしました");
 }
 
-// --- ページロード時に読み込み ---
+// --- ページロード時 ---
 loadProducts();
-</script>
 
+</script>
 </body>
 </html>
