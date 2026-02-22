@@ -125,10 +125,10 @@ div.innerHTML = `
     <strong onclick="copyJan('${product.jan}')">
       ${product.name}
     </strong>
-    <button class="edit-btn"
-      onclick="startEdit('${product.id}', \`${product.name}\`)">
-      ✏️
-    </button>
+<button class="edit-btn"
+  onclick="startEdit('${product.id}')">
+  ✏️
+</button>
   </div>
 
   <div id="edit-${product.id}" style="display:none; margin-top:8px;">
@@ -154,8 +154,11 @@ div.innerHTML = `
 `;
 
 
-    function startEdit(id, currentName) {
-  document.getElementById("edit-" + id).style.display = "block";
+function startEdit(id) {
+  const box = document.getElementById("edit-" + id);
+  if (box) {
+    box.style.display = "block";
+  }
 }
 
 async function saveEdit(id) {
