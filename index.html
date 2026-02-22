@@ -68,8 +68,6 @@ button:active { opacity: 0.8; }
 @media (min-width: 600px) {
   body { max-width: 600px; margin: 20px auto; }
 }
-
-
   
 .toast {
   position: fixed;
@@ -88,8 +86,6 @@ button:active { opacity: 0.8; }
 .toast.show {
   opacity: 1;
 }
-
-
   
 </style>
 </head>
@@ -186,14 +182,6 @@ async function editName(jan, currentName) {
 
   loadProducts();
 }
-
-// --- JANコードコピー ---
-//function copyJan(jan) {
-//  navigator.clipboard.writeText(jan);
-//  alert("JANコードをコピーしました");
-
-  
-  
   function copyJan(jan) {
   navigator.clipboard.writeText(jan);
   showToast("JANコードをコピーしました");
@@ -214,18 +202,7 @@ function showToast(message) {
     toast.classList.remove("show");
     setTimeout(() => toast.remove(), 200);
   }, 1200);
-//}
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  }
+}
 
 // --- ページロード時 ---
 loadProducts();
