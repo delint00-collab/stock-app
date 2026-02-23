@@ -121,16 +121,24 @@ async function loadProducts() {
         </button>
       </div>
 
-      <div id="edit-${product.id}" style="display:none; margin-top:8px;">
-        <input type="text"
-          id="input-${product.id}"
-          value="${product.name}"
-          style="width:65%; padding:4px; font-size:14px;">
-        <button class="save-btn" data-id="${product.id}"
-          style="width:30%; font-size:12px;">
-          保存
-        </button>
-      </div>
+<div id="edit-${product.id}" style="display:none; margin-top:8px;">
+  <input type="text"
+    id="name-${product.id}"
+    value="${product.name}"
+    placeholder="商品名"
+    style="width:100%; padding:4px; font-size:14px; margin-bottom:4px;">
+
+  <input type="text"
+    id="jan-${product.id}"
+    value="${product.jan}"
+    placeholder="JANコード"
+    style="width:100%; padding:4px; font-size:14px; margin-bottom:6px;">
+
+  <button class="save-btn" data-id="${product.id}"
+    style="width:100%; font-size:14px;">
+    保存
+  </button>
+</div>
 
       在庫:
       <span class="stock-number ${product.stock === 0 ? 'zero' : ''}">
@@ -187,20 +195,33 @@ function attachEvents() {
 }
 
 async function saveEdit(id) {
-  const newName = document.getElementById("input-" + id).value.trim();
-  if (!newName) return;
+  const newName = document.getElementById("name-" + id).value.trim();
+  const newJan  = document.getElementById("jan-" + id).value.trim();
 
-  const { error } = await mySupabase
-    .from("products")
-    .update({ name: newName, updated_at: new Date() })
-    .eq("id", id);
-
-  if (error) {
-    showToast("更新エラー");
+  if (!newName || !newJan) {
+    showToast("商品名とJANを入力してください");
     return;
   }
 
-  showToast("商品名を更新しました");
+  const { error } = await mySupabase
+    .from("products")
+    .update({
+      name: newName,
+      jan: newJan,
+      updated_at: new Date()
+    })
+    .eq("id", id);
+
+  if (error) {
+    if (error.message.includes("unique")) {
+      showToast("そのJANは既に登録されています");
+    } else {
+      showToast("更新エラー");
+    }
+    return;
+  }
+
+  showToast("商品情報を更新しました");
   loadProducts();
 }
 
