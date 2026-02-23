@@ -237,7 +237,7 @@ document.querySelectorAll(".cancel-btn").forEach(btn => {
     btn.onclick = () => {
       const id = btn.dataset.id;
       document.getElementById("edit-" + id).style.display = "block";
-      document.getElementById("input-" + id).focus();
+      document.getElementById("name-" + id).focus();
     };
   });
 
