@@ -30,10 +30,6 @@ h2 {
   justify-content: space-between;
   align-items: center;
 
-<button class="delete-btn" data-id="${product.id}"
-  style="font-size:12px; padding:2px 6px; background:#777; color:white; border:none; border-radius:5px;">
-  🗑
-</button>
 
   
 }
@@ -150,6 +146,19 @@ async function loadProducts() {
         <button class="edit-btn" data-id="${product.id}">
           ✏️
         </button>
+
+
+<button class="delete-btn" data-id="${product.id}"
+  style="font-size:12px; padding:2px 6px; background:#777; color:white; border:none; border-radius:5px;">
+  🗑
+</button>
+
+
+
+
+
+
+        
       </div>
 
 <div id="edit-${product.id}" style="display:none; margin-top:8px;">
