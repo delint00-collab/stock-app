@@ -132,6 +132,9 @@ async function loadProducts() {
     id="jan-${product.id}"
     value="${product.jan}"
     placeholder="JANコード"
+
+inputmode="numeric" pattern="[0-9]*"
+    
     style="width:100%; padding:4px; font-size:14px; margin-bottom:6px;">
 
   <button class="save-btn" data-id="${product.id}"
