@@ -29,6 +29,13 @@ h2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+<button class="delete-btn" data-id="${product.id}"
+  style="font-size:12px; padding:2px 6px; background:#777; color:white; border:none; border-radius:5px;">
+  🗑
+</button>
+
+  
 }
 .product strong {
   font-size: 20px;
@@ -86,6 +93,29 @@ button.minus {
 <body>
 
 <h2>バック在庫</h2>
+
+
+<div style="background:#fff; padding:12px; margin-bottom:14px; border-radius:8px; border:1px solid #ccc;">
+
+  <input type="text" id="new-name"
+    placeholder="商品名"
+    style="width:100%; padding:6px; margin-bottom:6px; font-size:14px;">
+
+  <input type="text" id="new-jan"
+    placeholder="JANコード"
+    inputmode="numeric"
+    pattern="[0-9]*"
+    style="width:100%; padding:6px; margin-bottom:8px; font-size:14px;">
+
+  <button id="add-product" style="width:100%;">
+    ＋ 商品を追加
+  </button>
+
+</div>
+
+
+
+  
 <div id="products"></div>
 
 <script>
@@ -217,6 +247,20 @@ document.querySelectorAll(".cancel-btn").forEach(btn => {
       changeStock(btn.dataset.id, Number(btn.dataset.stock) - 1);
     };
   });
+
+document.querySelectorAll(".delete-btn").forEach(btn => {
+  btn.onclick = () => deleteProduct(btn.dataset.id);
+});
+
+  
+const addBtn = document.getElementById("add-product");
+if (addBtn) {
+  addBtn.onclick = addProduct;
+}
+
+
+
+
 }
 
 async function saveEdit(id) {
@@ -289,6 +333,56 @@ function showToast(message) {
   }, 1200);
 }
 
+
+async function addProduct() {
+  const name = document.getElementById("new-name").value.trim();
+  const jan = document.getElementById("new-jan").value.trim();
+
+  if (!name || !jan) {
+    showToast("商品名とJANを入力してください");
+    return;
+  }
+
+  const { error } = await mySupabase
+    .from("products")
+    .insert([{
+      name: name,
+      jan: jan,
+      stock: 0,
+      updated_at: new Date()
+    }]);
+
+  if (error) {
+    showToast("追加エラー（JAN重複の可能性）");
+    return;
+  }
+
+  showToast("商品を追加しました");
+
+  document.getElementById("new-name").value = "";
+  document.getElementById("new-jan").value = "";
+
+  loadProducts();
+}
+
+async function deleteProduct(id) {
+
+  if (!confirm("本当に削除しますか？")) return;
+
+  const { error } = await mySupabase
+    .from("products")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    showToast("削除エラー");
+    return;
+  }
+
+  showToast("削除しました");
+  loadProducts();
+}
+  
 loadProducts();
 </script>
 
