@@ -35,8 +35,9 @@ h2 {
   cursor: pointer;
 }
 .edit-btn {
-  font-size: 14px;
-  padding: 4px 8px;
+  font-size: 12px;
+  padding: 2px 6px;
+  width: 36px;
   background: #2196F3;
   border: none;
   border-radius: 5px;
@@ -122,6 +123,7 @@ async function loadProducts() {
       </div>
 
 <div id="edit-${product.id}" style="display:none; margin-top:8px;">
+
   <input type="text"
     id="name-${product.id}"
     value="${product.name}"
@@ -132,15 +134,22 @@ async function loadProducts() {
     id="jan-${product.id}"
     value="${product.jan}"
     placeholder="JANコード"
-
-inputmode="numeric" pattern="[0-9]*"
-    
+    inputmode="numeric"
+    pattern="[0-9]*"
     style="width:100%; padding:4px; font-size:14px; margin-bottom:6px;">
 
-  <button class="save-btn" data-id="${product.id}"
-    style="width:100%; font-size:14px;">
-    保存
-  </button>
+  <div style="display:flex; gap:6px;">
+    <button class="save-btn" data-id="${product.id}"
+      style="flex:1; font-size:14px;">
+      保存
+    </button>
+
+    <button class="cancel-btn" data-id="${product.id}"
+      style="flex:1; font-size:14px; background:#aaa;">
+      キャンセル
+    </button>
+  </div>
+
 </div>
 
       在庫:
@@ -168,6 +177,19 @@ inputmode="numeric" pattern="[0-9]*"
 
 function attachEvents() {
 
+
+document.querySelectorAll(".cancel-btn").forEach(btn => {
+  btn.onclick = () => {
+    const id = btn.dataset.id;
+    document.getElementById("edit-" + id).style.display = "none";
+  };
+});
+
+
+
+
+
+  
   document.querySelectorAll(".copy").forEach(el => {
     el.onclick = () => copyJan(el.dataset.jan);
   });
@@ -201,6 +223,10 @@ async function saveEdit(id) {
   const newName = document.getElementById("name-" + id).value.trim();
   const newJan  = document.getElementById("jan-" + id).value.trim();
 
+
+document.getElementById("edit-" + id).style.display = "none";
+  
+
   if (!newName || !newJan) {
     showToast("商品名とJANを入力してください");
     return;
@@ -225,7 +251,8 @@ async function saveEdit(id) {
   }
 
   showToast("商品情報を更新しました");
-  loadProducts();
+document.getElementById("edit-" + id).style.display = "none";
+loadProducts();
 }
 
 async function changeStock(id, newStock) {
