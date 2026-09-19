@@ -220,10 +220,17 @@ async function loadProducts() {
         </div>
       </div>
 
+
       在庫:
-      <span class="stock-number ${product.stock === 0 ? 'zero' : ''}">
+      <span class="stock-number stock-editable ${product.stock === 0 ? 'zero' : ''}"
+        data-id="${product.id}"
+        data-stock="${product.stock}"
+      >
         ${product.stock}
       </span><br>
+
+
+      
 
       更新: ${new Date(product.updated_at).toLocaleString()}<br>
 
@@ -258,6 +265,62 @@ function attachEvents() {
     el.onclick = () => copyJan(el.dataset.jan);
   });
 
+document.querySelectorAll(".stock-editable").forEach(el => {
+  el.onclick = () => {
+    const id = el.dataset.id;
+    const currentStock = Number(el.dataset.stock);
+
+    const input = document.createElement("input");
+    input.type = "number";
+    input.min = "0";
+    input.value = currentStock;
+    input.inputMode = "numeric";
+
+    input.style.width = "70px";
+    input.style.fontSize = "20px";
+    input.style.textAlign = "center";
+
+    el.replaceWith(input);
+
+    input.focus();
+    input.select();
+
+    let saved = false;
+
+    const save = async () => {
+      if (saved) return;
+      saved = true;
+
+      let newStock = Number(input.value);
+
+      if (!Number.isFinite(newStock)) {
+        newStock = currentStock;
+      }
+
+      if (newStock < 0) {
+        newStock = 0;
+      }
+
+      await changeStock(id, newStock);
+    };
+
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        input.blur();
+      }
+    });
+
+    input.addEventListener("blur", save);
+  };
+});
+
+
+
+
+
+
+
+  
   document.querySelectorAll(".edit-btn").forEach(btn => {
     btn.onclick = () => {
       const id = btn.dataset.id;
