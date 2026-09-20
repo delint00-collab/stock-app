@@ -32,7 +32,6 @@ h2 {
 }
 .product strong {
   font-size: 20px;
-  cursor: pointer;
 }
 
 /* ★ 編集＆削除ボタン共通 */
@@ -184,9 +183,22 @@ async function loadProducts() {
 
     div.innerHTML = `
       <div class="top-row">
-        <strong class="copy" data-jan="${product.jan}">
-          ${product.name}
-        </strong>
+
+<div>
+  <strong>
+    ${product.name}
+  </strong>
+
+  <div
+    class="copy"
+    data-jan="${product.jan}"
+    style="font-size:14px; margin-top:4px; cursor:pointer;"
+  >
+    JAN: ${product.jan}
+  </div>
+</div>
+
+      
 
         <div style="display:flex; flex-direction:column; gap:4px;">
           <button class="edit-btn" data-id="${product.id}">✏️</button>
